@@ -35,4 +35,6 @@ dataSources:
       eventHandlers:
         - event: ExecutePurchase(indexed uint256,indexed address,uint256,address,uint256,bool)
           handler: handlePurchase
+        - event: Payout(indexed address,uint256)
+          handler: handlePayout
       file: ./src/passport.ts
