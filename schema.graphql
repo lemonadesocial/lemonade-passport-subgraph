@@ -1,0 +1,14 @@
+type Passport @entity(immutable: true) {
+  id: String! # contract address + tokenId
+  owner: Bytes! # address
+  paymentId: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Referral @entity(immutable: true) {
+  id: Bytes!
+  referrer: Bytes! # address
+  passport: String! # passport id
+}

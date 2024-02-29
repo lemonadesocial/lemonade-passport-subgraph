@@ -1,0 +1,38 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: PassportV1Call
+    network: optimism
+    source:
+      address: "0xDB65b1A785FF74388Ce68A1e8D5e2b8C95A8548a"
+      abi: PassportV1Call
+      startBlock: 115775322
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Approval(indexed address,indexed address,indexed uint256)
+        - ApprovalForAll(indexed address,indexed address,bool)
+        - Assign(indexed address,(address,uint256)[])
+        - Claim(indexed address)
+        - ExecuteClaim(indexed address,uint256)
+        - ExecutePurchase(indexed uint256,indexed address,uint256,address,uint256,bool)
+        - ExecuteReserve(indexed uint256,indexed address,uint256,bool,bool)
+        - Payout(indexed address,uint256)
+        - Purchase(indexed uint256,indexed address,uint256,address)
+        - Reserve(indexed uint256,indexed address,uint256,(address,uint256)[])
+        - SetProperty(indexed uint256,bytes32,bytes)
+        - SetPropertyBatch(indexed uint256,(bytes32,bytes)[])
+        - Transfer(indexed address,indexed address,indexed uint256)
+      abis:
+        - name: PassportV1Call
+          file: ./abis/PassportV1Call.json
+      eventHandlers:
+        - event: ExecutePurchase(indexed uint256,indexed address,uint256,address,uint256,bool)
+          handler: handlePurchase
+      file: ./src/passport.ts
