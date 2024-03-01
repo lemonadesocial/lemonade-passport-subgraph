@@ -1,12 +1,16 @@
-type Referral @entity(immutable: true) {
+type Referral @entity {
   id: Bytes! # tx hash
+  referee: Bytes! # address
   referrer: Bytes! # address
-  claimed: Boolean!
-  incentiveAmount: BigInt!
+  passport: Bytes! # address
+  amount: BigInt!
 }
 
-type User @entity(immutable: true) {
+type Account @entity {
   id: Bytes! # address
-  deposit: BigInt!
-  referrals: [Referral!]!
+  passport: Bytes! # address
+  claimed: Int!
+  claimedAmount: BigInt!
+  unclaimed: Int!
+  unclaimedAmount: BigInt!
 }

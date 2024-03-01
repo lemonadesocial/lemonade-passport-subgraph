@@ -1,80 +1,53 @@
-import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
+import { BigInt } from "@graphprotocol/graph-ts"
 import {
   ExecutePurchase as ExecutePurchaseEvent,
   ExecuteReserve as ExecuteReserveEvent,
   Payout as PayoutEvent,
 } from "../generated/PassportV1Call/PassportV1Call"
-import { Referral, User } from "../generated/schema"
+import { Referral, Account } from "../generated/schema"
 
 export function handlePurchase(event: ExecutePurchaseEvent): void {
   if (!event.params.success) return
 
-  if (event.params.referrer != Address.zero()) {
-    let referral = new Referral(event.transaction.hash)
-    let user = User.load(event.params.referrer)
+  const account = new Account(event.params.sender)
 
-    referral.referrer = event.params.referrer
-    referral.incentiveAmount = BigInt.fromI32(0)
-    referral.claimed = false
+  account.passport = event.address
+  account.claimed = 0
+  account.claimedAmount = BigInt.fromI32(0)
+  account.unclaimed = 0
+  account.unclaimedAmount = BigInt.fromI32(0)
 
-    referral.save()
-
-    if (!user) {
-      user = new User(event.params.referrer)
-
-      user.deposit = BigInt.fromI32(0)
-      user.referrals = new Array<Bytes>()
-
-      const referrals = user.referrals
-      referrals.push(referral.id)
-
-      user.referrals = referrals
-    } else {
-      user.referrals.push(referral.id)
-    }
-
-    user.save()
-  }
+  account.save()
 }
 
 export function handleReserve(event: ExecuteReserveEvent): void {
-  if (!event.params.success || !event.params.referred) return
+  if (!event.params.success) return
 
-  let referral = new Referral(event.transaction.hash)
-  let user = User.load(event.params.sender)
+  const account = new Account(event.params.sender)
 
-  if (!user) {
-    user = new User(event.params.sender)
+  account.passport = event.address
+  account.claimed = 0
+  account.claimedAmount = BigInt.fromI32(0)
+  account.unclaimed = 0
+  account.unclaimedAmount = BigInt.fromI32(0)
 
-    user.deposit = BigInt.fromI32(0)
-    user.referrals = new Array<Bytes>()
-
-    const referrals = user.referrals
-    referrals.push(referral.id)
-
-    user.referrals = referrals
-  } else {
-    user.referrals.push(referral.id)
-  }
-
-  referral.referrer = event.params.sender
-  referral.incentiveAmount = BigInt.fromI32(0)
-  referral.claimed = false
-
-  referral.save()
-  user.save()
+  account.save()
 }
 
 export function handlePayout(event: PayoutEvent): void {
-  let referral = Referral.loadInBlock(event.transaction.hash)
+  let referral = new Referral(event.transaction.hash.concatI32(event.logIndex.toI32()))
+  let account = Account.load(event.params.recipient)
 
-  if (!referral) return
+  if (!account) return
 
-  // The case of reserving passports. Payout directly to sender
-  if (event.params.recipient == referral.referrer) {
-    referral.incentiveAmount = event.params.amount
-    referral.claimed = true
-  }
+  referral.amount = event.params.amount
+  referral.referee = event.params.recipient
+  referral.referrer = event.params.recipient
+  referral.passport = event.address
+
+  account.claimed += 1
+  account.claimedAmount = account.claimedAmount.plus(event.params.amount)
 
   referral.save()
+  account.save()
 }

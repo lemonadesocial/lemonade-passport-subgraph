@@ -1,46 +1,35 @@
-import { BigInt, Bytes } from '@graphprotocol/graph-ts'
+import { BigInt } from '@graphprotocol/graph-ts'
 
 import { Withdrawn as WithdrawnEvent, Deposited as DepositedEvent } from '../generated/EscrowUpgradeable/EscrowUpgradeable'
-import { Referral, User } from '../generated/schema'
+import { Referral, Account } from '../generated/schema'
 
 export function handleWithdrawn(event: WithdrawnEvent): void {
-    let user = User.load(event.params.payee)
+    let account = Account.load(event.params.payee)
 
-    if (!user) return
+    if (!account) return
 
-    user.referrals.forEach(referral => {
-        let entity = Referral.load(referral)
+    account.claimed += account.unclaimed
+    account.claimedAmount = account.claimedAmount.plus(event.params.weiAmount)
+    account.unclaimed = 0
+    account.unclaimedAmount = BigInt.fromI32(0)
 
-        if (!entity) return
-
-        entity.claimed = true
-
-        entity.save()
-    });
-    user.deposit = BigInt.fromI32(0)
-
-    user.save()
+    account.save()
 }
 
 export function handleDeposited(event: DepositedEvent): void {
-    let user = User.load(event.params.payee)
-    const referral = Referral.loadInBlock(event.transaction.hash)
+    const referral = new Referral(event.transaction.hash.concatI32(event.logIndex.toI32()))
+    const account = Account.load(event.params.payee)
 
-    if (!user) {
-        user = new User(event.params.payee)
+    if (!account) return
 
-        user.deposit = BigInt.fromI32(0)
-        user.referrals = new Array<Bytes>()
-    }
+    referral.amount = event.params.weiAmount
+    referral.referee = event.transaction.from
+    referral.referrer = event.params.payee
+    referral.passport = event.address
 
-    user.deposit = user.deposit.plus(event.params.weiAmount)
+    account.unclaimed += 1
+    account.unclaimedAmount = account.unclaimedAmount.plus(event.params.weiAmount)
 
-    if (!referral) return
-
-    if (event.params.payee == referral.referrer) {
-        referral.incentiveAmount = event.params.weiAmount
-    }
-
-    user.save()
     referral.save()
+    account.save()
 }
