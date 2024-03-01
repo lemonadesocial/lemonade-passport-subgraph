@@ -3,6 +3,10 @@
     "PassportV1Call": {
       "address": "0xDB65b1A785FF74388Ce68A1e8D5e2b8C95A8548a",
       "startBlock": 115775322
+    },
+    "EscrowUpgradeable": {
+      "address": "0x532655d615aA863794F1aeC5A072DCcF38DAb7d1",
+      "startBlock": 115775322
     }
   }
 }

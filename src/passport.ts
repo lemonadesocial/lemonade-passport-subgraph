@@ -1,31 +1,40 @@
-import { Address, BigInt } from "@graphprotocol/graph-ts"
+import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
 import {
   ExecutePurchase as ExecutePurchaseEvent,
   ExecuteReserve as ExecuteReserveEvent,
   Payout as PayoutEvent,
 } from "../generated/PassportV1Call/PassportV1Call"
-import { Passport, Referral } from "../generated/schema"
+import { Referral, User } from "../generated/schema"
 
 export function handlePurchase(event: ExecutePurchaseEvent): void {
   if (!event.params.success) return
 
-  let entity = new Passport(
-    event.address.toHexString() + '_' + event.params.tokenId.toString()
-  )
-
-  entity.owner = event.params.sender
-  entity.paymentId = event.params.paymentId
-
   if (event.params.referrer != Address.zero()) {
     let referral = new Referral(event.transaction.hash)
+    let user = User.load(event.params.referrer)
 
     referral.referrer = event.params.referrer
-    referral.incentiveAmount = BigInt.fromI32(0);
+    referral.incentiveAmount = BigInt.fromI32(0)
+    referral.claimed = false
 
     referral.save()
-  }
 
-  entity.save()
+    if (!user) {
+      user = new User(event.params.referrer)
+
+      user.deposit = BigInt.fromI32(0)
+      user.referrals = new Array<Bytes>()
+
+      const referrals = user.referrals
+      referrals.push(referral.id)
+
+      user.referrals = referrals
+    } else {
+      user.referrals.push(referral.id)
+    }
+
+    user.save()
+  }
 }
 
 export function handleReserve(event: ExecuteReserveEvent): void {
@@ -35,6 +44,7 @@ export function handleReserve(event: ExecuteReserveEvent): void {
 
   referral.referrer = event.params.sender
   referral.incentiveAmount = BigInt.fromI32(0)
+  referral.claimed = false
 
   referral.save()
 }
@@ -42,9 +52,10 @@ export function handleReserve(event: ExecuteReserveEvent): void {
 export function handlePayout(event: PayoutEvent): void {
   let referral = Referral.loadInBlock(event.transaction.hash)
 
-  // The payout amount to the sender equals the transfer amount to referrer
-  if (referral && event.params.recipient == event.transaction.from) {
+  // The case of reserving passports. Payout directly to sender
+  if (referral && event.params.recipient == referral.referrer) {
     referral.incentiveAmount = event.params.amount
+    referral.claimed = true
     referral.save()
   }
 }
