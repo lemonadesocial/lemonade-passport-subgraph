@@ -17,6 +17,9 @@ export function handleWithdrawn(event: WithdrawnEvent): void {
 
         entity.save()
     });
+    user.deposit = BigInt.fromI32(0)
+
+    user.save()
 }
 
 export function handleDeposited(event: DepositedEvent): void {

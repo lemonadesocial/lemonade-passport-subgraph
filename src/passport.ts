@@ -41,21 +41,40 @@ export function handleReserve(event: ExecuteReserveEvent): void {
   if (!event.params.success || !event.params.referred) return
 
   let referral = new Referral(event.transaction.hash)
+  let user = User.load(event.params.sender)
+
+  if (!user) {
+    user = new User(event.params.sender)
+
+    user.deposit = BigInt.fromI32(0)
+    user.referrals = new Array<Bytes>()
+
+    const referrals = user.referrals
+    referrals.push(referral.id)
+
+    user.referrals = referrals
+  } else {
+    user.referrals.push(referral.id)
+  }
 
   referral.referrer = event.params.sender
   referral.incentiveAmount = BigInt.fromI32(0)
   referral.claimed = false
 
   referral.save()
+  user.save()
 }
 
 export function handlePayout(event: PayoutEvent): void {
   let referral = Referral.loadInBlock(event.transaction.hash)
 
+  if (!referral) return
+
   // The case of reserving passports. Payout directly to sender
-  if (referral && event.params.recipient == referral.referrer) {
+  if (event.params.recipient == referral.referrer) {
     referral.incentiveAmount = event.params.amount
     referral.claimed = true
-    referral.save()
   }
+
+  referral.save()
 }
