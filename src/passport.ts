@@ -1,6 +1,7 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 import {
   ExecutePurchase as ExecutePurchaseEvent,
+  ExecuteReserve as ExecuteReserveEvent,
   Payout as PayoutEvent,
 } from "../generated/PassportV1Call/PassportV1Call"
 import { Passport, Referral } from "../generated/schema"
@@ -27,10 +28,22 @@ export function handlePurchase(event: ExecutePurchaseEvent): void {
   entity.save()
 }
 
+export function handleReserve(event: ExecuteReserveEvent): void {
+  if (!event.params.success || !event.params.referred) return
+
+  let referral = new Referral(event.transaction.hash)
+
+  referral.referrer = event.params.sender
+  referral.incentiveAmount = BigInt.fromI32(0)
+
+  referral.save()
+}
+
 export function handlePayout(event: PayoutEvent): void {
   let referral = Referral.loadInBlock(event.transaction.hash)
 
-  if (referral) {
+  // The payout amount to the sender equals the transfer amount to referrer
+  if (referral && event.params.recipient == event.transaction.from) {
     referral.incentiveAmount = event.params.amount
     referral.save()
   }
