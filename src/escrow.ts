@@ -25,7 +25,7 @@ export function handleDeposited(event: DepositedEvent): void {
     referral.amount = event.params.weiAmount
     referral.referee = event.transaction.from
     referral.referrer = event.params.payee
-    referral.passport = event.address
+    referral.passport = event.transaction.to!
 
     account.unclaimed += 1
     account.unclaimedAmount = account.unclaimedAmount.plus(event.params.weiAmount)
