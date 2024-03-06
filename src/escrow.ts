@@ -19,21 +19,28 @@ export function handleWithdrawn(event: WithdrawnEvent): void {
 
 export function handleDeposited(event: DepositedEvent): void {
   const transaction = Transaction.load(event.transaction.hash)!
-  const escrow = new Escrow(event.address)
-  const referral = new Referral(event.transaction.hash.concatI32(event.logIndex.toI32()))
-  const account = findOrCreateAccount(Address.fromBytes(transaction.passport), event.params.payee)
 
-  escrow.passport = transaction.passport
+  if (!Escrow.load(event.address)) {
+    const escrow = new Escrow(event.address)
+
+    escrow.passport = transaction.passport
+
+    escrow.save()
+  }
+
+  const referral = new Referral(event.transaction.hash.concatI32(event.logIndex.toI32()))
 
   referral.amount = event.params.weiAmount
   referral.referee = transaction.sender
   referral.referrer = event.params.payee
   referral.passport = transaction.passport
 
+  referral.save()
+
+  const account = findOrCreateAccount(Address.fromBytes(transaction.passport), event.params.payee)
+
   account.unclaimedCount += 1
   account.unclaimedAmount = account.unclaimedAmount.plus(event.params.weiAmount)
 
-  referral.save()
   account.save()
-  escrow.save()
 }

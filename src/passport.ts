@@ -38,17 +38,19 @@ export function handlePayout(event: PayoutEvent): void {
 
   if (!transaction || transaction.sender != event.params.recipient) return
 
-  const referral = new Referral(event.transaction.hash.concatI32(event.logIndex.toI32()))
   const account = findOrCreateAccount(Address.fromBytes(transaction.passport), Address.fromBytes(transaction.sender))
+
+  account.claimedCount += 1
+  account.claimedAmount = account.claimedAmount.plus(event.params.amount)
+
+  account.save()
+
+  const referral = new Referral(event.transaction.hash.concatI32(event.logIndex.toI32()))
 
   referral.amount = event.params.amount
   referral.referee = event.params.recipient
   referral.referrer = event.params.recipient
   referral.passport = transaction.passport
 
-  account.claimedCount += 1
-  account.claimedAmount = account.claimedAmount.plus(event.params.amount)
-
   referral.save()
-  account.save()
 }
