@@ -1,14 +1,29 @@
-type Passport @entity(immutable: true) {
-  id: String! # contract address + tokenId
-  owner: Bytes! # address
-  paymentId: BigInt!
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+type Referral @entity {
+  id: Bytes! # tx hash
+  referee: Bytes! # address
+  referrer: Bytes! # address
+  passport: Bytes! # address
+  amount: BigInt!
 }
 
-type Referral @entity(immutable: true) {
-  id: Bytes!
-  referrer: Bytes! # address
-  passport: String! # passport id
+type Account @entity {
+  id: String! # passport contract address + wallet address
+  claimedCount: Int!
+  claimedAmount: BigInt!
+  unclaimedCount: Int!
+  unclaimedAmount: BigInt!
+}
+
+# To easily map data between events
+type Transaction @entity {
+  id: Bytes! # tx hash
+  sender: Bytes! # address
+  referrer: Bytes # address
+  passport: Bytes! # address
+  referred: Boolean
+}
+
+type Escrow @entity {
+  id: Bytes! # address
+  passport: Bytes! # address
 }

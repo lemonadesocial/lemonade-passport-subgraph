@@ -16,23 +16,39 @@ dataSources:
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - Approval(indexed address,indexed address,indexed uint256)
-        - ApprovalForAll(indexed address,indexed address,bool)
-        - Assign(indexed address,(address,uint256)[])
-        - Claim(indexed address)
-        - ExecuteClaim(indexed address,uint256)
         - ExecutePurchase(indexed uint256,indexed address,uint256,address,uint256,bool)
         - ExecuteReserve(indexed uint256,indexed address,uint256,bool,bool)
         - Payout(indexed address,uint256)
-        - Purchase(indexed uint256,indexed address,uint256,address)
-        - Reserve(indexed uint256,indexed address,uint256,(address,uint256)[])
-        - SetProperty(indexed uint256,bytes32,bytes)
-        - SetPropertyBatch(indexed uint256,(bytes32,bytes)[])
-        - Transfer(indexed address,indexed address,indexed uint256)
       abis:
         - name: PassportV1Call
           file: ./abis/PassportV1Call.json
       eventHandlers:
         - event: ExecutePurchase(indexed uint256,indexed address,uint256,address,uint256,bool)
           handler: handlePurchase
+        - event: ExecuteReserve(indexed uint256,indexed address,uint256,bool,bool)
+          handler: handleReserve
+        - event: Payout(indexed address,uint256)
+          handler: handlePayout
       file: ./src/passport.ts
+  - kind: ethereum
+    name: EscrowUpgradeable
+    network: optimism
+    source:
+      abi: EscrowUpgradeable
+      startBlock: 115775322
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Withdrawn(indexed address,uint256)
+        - Deposited(indexed address,uint256)
+      abis:
+        - name: EscrowUpgradeable
+          file: ./abis/EscrowUpgradeable.json
+      eventHandlers:
+        - event: Withdrawn(indexed address,uint256)
+          handler: handleWithdrawn
+        - event: Deposited(indexed address,uint256)
+          handler: handleDeposited
+      file: ./src/escrow.ts
