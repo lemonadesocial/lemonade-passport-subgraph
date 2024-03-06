@@ -7,10 +7,10 @@ type Referral @entity {
 }
 
 type Account @entity {
-  id: String! # address + passport contract address
-  claimed: Int!
+  id: String! # passport contract address + wallet address
+  claimedCount: Int!
   claimedAmount: BigInt!
-  unclaimed: Int!
+  unclaimedCount: Int!
   unclaimedAmount: BigInt!
 }
 

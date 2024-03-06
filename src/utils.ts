@@ -3,18 +3,17 @@ import { Address, BigInt } from "@graphprotocol/graph-ts";
 
 import { Account } from "../generated/schema";
 
-
 /** Fetch an account or create one if it doesn't exist */
-export function findOrCreateAccount(address: Address, passport: Address): Account {
-  let account = Account.load(address.toHexString() + '_' + passport.toHexString())
+export function findOrCreateAccount(passport: Address, address: Address): Account {
+  let account = Account.load(passport.toHexString() + '_' + address.toHexString())
 
   if (account) return account
 
-  account = new Account(address.toHexString() + '_' + passport.toHexString());
+  account = new Account(passport.toHexString() + '_' + address.toHexString());
 
-  account.claimed = 0;
+  account.claimedCount = 0;
   account.claimedAmount = BigInt.fromI32(0);
-  account.unclaimed = 0;
+  account.unclaimedCount = 0;
   account.unclaimedAmount = BigInt.fromI32(0);
 
   account.save();
