@@ -7,10 +7,23 @@ type Referral @entity {
 }
 
 type Account @entity {
-  id: Bytes! # address
-  passport: Bytes! # address
+  id: String! # address + passport contract address
   claimed: Int!
   claimedAmount: BigInt!
   unclaimed: Int!
   unclaimedAmount: BigInt!
+}
+
+# To easily map data between events
+type Transaction @entity {
+  id: Bytes! # tx hash
+  sender: Bytes! # address
+  referrer: Bytes # address
+  passport: Bytes! # address
+  referred: Boolean
+}
+
+type Escrow @entity {
+  id: Bytes! # address
+  passport: Bytes! # address
 }
