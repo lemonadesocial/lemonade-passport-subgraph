@@ -1,12 +1,12 @@
-import { BigInt } from '@graphprotocol/graph-ts'
+import { Address, BigInt } from '@graphprotocol/graph-ts'
 
 import { Withdrawn as WithdrawnEvent, Deposited as DepositedEvent } from '../generated/EscrowUpgradeable/EscrowUpgradeable'
-import { Referral, Account, Transaction, Escrow } from '../generated/schema'
+import { Referral, Transaction, Escrow } from '../generated/schema'
+import { findOrCreateAccount } from './utils'
 
 export function handleWithdrawn(event: WithdrawnEvent): void {
   const escrow = Escrow.load(event.address)!
-  // Account should not be null as there must be an account created if someone wants to withdraw
-  const account = Account.load(event.transaction.from.toHexString() + '_' + escrow.passport.toHexString())!
+  const account = findOrCreateAccount(event.transaction.from, Address.fromBytes(escrow.passport))
 
   account.claimed += account.unclaimed
   account.claimedAmount = account.claimedAmount.plus(event.params.weiAmount)
@@ -20,8 +20,7 @@ export function handleDeposited(event: DepositedEvent): void {
   const transaction = Transaction.load(event.transaction.hash)!
   const escrow = new Escrow(event.address)
   const referral = new Referral(event.transaction.hash.concatI32(event.logIndex.toI32()))
-  // Account should not be null as there must be an account created for the referrer (payee)
-  const account = Account.load(event.params.payee.toHexString() + '_' + transaction.passport.toHexString())!
+  const account = findOrCreateAccount(event.params.payee, Address.fromBytes(transaction.passport))
 
   escrow.passport = transaction.passport
 

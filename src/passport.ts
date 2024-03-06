@@ -5,9 +5,9 @@ import {
   ExecuteReserve as ExecuteReserveEvent,
   Payout as PayoutEvent,
 } from "../generated/PassportV1Call/PassportV1Call"
-import { Referral, Account, Transaction } from "../generated/schema"
+import { Referral, Transaction } from "../generated/schema"
 
-import { createAccount } from "./utils"
+import { findOrCreateAccount } from "./utils"
 
 export function handlePurchase(event: ExecutePurchaseEvent): void {
   if (!event.params.success) return
@@ -17,7 +17,7 @@ export function handlePurchase(event: ExecutePurchaseEvent): void {
   transaction.sender = event.params.sender
   transaction.referrer = event.params.referrer
   transaction.passport = event.address
-  
+
   transaction.save()
 }
 
@@ -29,21 +29,17 @@ export function handleReserve(event: ExecuteReserveEvent): void {
   transaction.sender = event.params.sender
   transaction.referred = event.params.referred
   transaction.passport = event.address
-  
+
   transaction.save()
 }
 
 export function handlePayout(event: PayoutEvent): void {
   const transaction = Transaction.load(event.transaction.hash)
 
-  if (!transaction || (!transaction.referred && !transaction.referrer)) return
+  if (!transaction || transaction.sender != event.params.recipient) return
 
   const referral = new Referral(event.transaction.hash.concatI32(event.logIndex.toI32()))
-  let account = Account.load(transaction.sender.toHexString() + '_' + transaction.passport.toHexString())
-
-  if (!account) {
-    account = createAccount(Address.fromBytes(transaction.sender), Address.fromBytes(transaction.passport))
-  }
+  const account = findOrCreateAccount(Address.fromBytes(transaction.sender), Address.fromBytes(transaction.passport))
 
   referral.amount = event.params.amount
   referral.referee = event.params.recipient
