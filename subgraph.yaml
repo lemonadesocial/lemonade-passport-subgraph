@@ -16,19 +16,9 @@ dataSources:
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - Approval(indexed address,indexed address,indexed uint256)
-        - ApprovalForAll(indexed address,indexed address,bool)
-        - Assign(indexed address,(address,uint256)[])
-        - Claim(indexed address)
-        - ExecuteClaim(indexed address,uint256)
         - ExecutePurchase(indexed uint256,indexed address,uint256,address,uint256,bool)
         - ExecuteReserve(indexed uint256,indexed address,uint256,bool,bool)
         - Payout(indexed address,uint256)
-        - Purchase(indexed uint256,indexed address,uint256,address)
-        - Reserve(indexed uint256,indexed address,uint256,(address,uint256)[])
-        - SetProperty(indexed uint256,bytes32,bytes)
-        - SetPropertyBatch(indexed uint256,(bytes32,bytes)[])
-        - Transfer(indexed address,indexed address,indexed uint256)
       abis:
         - name: PassportV1Call
           file: ./abis/PassportV1Call.json
@@ -44,7 +34,6 @@ dataSources:
     name: EscrowUpgradeable
     network: optimism
     source:
-      address: "0x532655d615aA863794F1aeC5A072DCcF38DAb7d1"
       abi: EscrowUpgradeable
       startBlock: 115775322
     mapping:

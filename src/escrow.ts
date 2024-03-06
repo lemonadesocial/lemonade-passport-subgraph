@@ -6,7 +6,10 @@ import { Referral, Transaction, Escrow } from '../generated/schema'
 import { findOrCreateAccount } from './utils'
 
 export function handleWithdrawn(event: WithdrawnEvent): void {
-  const escrow = Escrow.load(event.address)!
+  const escrow = Escrow.load(event.address)
+
+  if (!escrow) return
+
   const account = findOrCreateAccount(Address.fromBytes(escrow.passport), event.transaction.from)
 
   account.claimedCount += account.unclaimedCount
@@ -18,7 +21,9 @@ export function handleWithdrawn(event: WithdrawnEvent): void {
 }
 
 export function handleDeposited(event: DepositedEvent): void {
-  const transaction = Transaction.load(event.transaction.hash)!
+  const transaction = Transaction.load(event.transaction.hash)
+
+  if (!transaction) return
 
   if (!Escrow.load(event.address)) {
     const escrow = new Escrow(event.address)
