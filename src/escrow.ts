@@ -3,7 +3,7 @@ import { Address, BigInt } from '@graphprotocol/graph-ts'
 import { Withdrawn as WithdrawnEvent, Deposited as DepositedEvent } from '../generated/EscrowUpgradeable/EscrowUpgradeable'
 import { Referral, Transaction, Escrow } from '../generated/schema'
 
-import { findOrCreateAccount } from './utils'
+import { findOrCreateAccount, incrementStatistics } from './utils'
 
 export function handleWithdrawn(event: WithdrawnEvent): void {
   const escrow = Escrow.load(event.address)
@@ -50,4 +50,6 @@ export function handleDeposited(event: DepositedEvent): void {
   account.totalAmount = account.totalAmount.plus(event.params.weiAmount)
 
   account.save()
+
+  incrementStatistics(1, event.params.weiAmount)
 }
