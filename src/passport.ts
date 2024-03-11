@@ -42,6 +42,8 @@ export function handlePayout(event: PayoutEvent): void {
 
   account.claimedCount += 1
   account.claimedAmount = account.claimedAmount.plus(event.params.amount)
+  account.totalCount += 1
+  account.totalAmount = account.totalAmount.plus(event.params.amount)
 
   account.save()
 

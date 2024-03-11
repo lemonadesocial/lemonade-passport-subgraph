@@ -12,6 +12,8 @@ type Account @entity {
   claimedAmount: BigInt!
   unclaimedCount: Int!
   unclaimedAmount: BigInt!
+  totalCount: Int! # unclaimed + claimed
+  totalAmount: BigInt! # unclaimed + claimed
 }
 
 # To easily map data between events

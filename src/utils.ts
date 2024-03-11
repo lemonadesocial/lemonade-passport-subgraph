@@ -15,6 +15,8 @@ export function findOrCreateAccount(passport: Address, address: Address): Accoun
   account.claimedAmount = BigInt.fromI32(0);
   account.unclaimedCount = 0;
   account.unclaimedAmount = BigInt.fromI32(0);
+  account.totalCount = 0;
+  account.totalAmount = BigInt.fromI32(0);
 
   account.save();
 

@@ -46,6 +46,8 @@ export function handleDeposited(event: DepositedEvent): void {
 
   account.unclaimedCount += 1
   account.unclaimedAmount = account.unclaimedAmount.plus(event.params.weiAmount)
+  account.totalCount += 1
+  account.totalAmount = account.totalAmount.plus(event.params.weiAmount)
 
   account.save()
 }
