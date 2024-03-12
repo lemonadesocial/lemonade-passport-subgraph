@@ -8,7 +8,6 @@ dataSources:
     name: PassportV1Call
     network: optimism
     source:
-      address: "0xDB65b1A785FF74388Ce68A1e8D5e2b8C95A8548a"
       abi: PassportV1Call
       startBlock: 115775322
     mapping:

@@ -7,7 +7,7 @@ import {
 } from "../generated/PassportV1Call/PassportV1Call"
 import { Referral, Transaction } from "../generated/schema"
 
-import { findOrCreateAccount } from "./utils"
+import { findOrCreateAccount, incrementStatistics } from "./utils"
 
 export function handlePurchase(event: ExecutePurchaseEvent): void {
   if (!event.params.success) return
@@ -42,6 +42,8 @@ export function handlePayout(event: PayoutEvent): void {
 
   account.claimedCount += 1
   account.claimedAmount = account.claimedAmount.plus(event.params.amount)
+  account.totalCount += 1
+  account.totalAmount = account.totalAmount.plus(event.params.amount)
 
   account.save()
 
@@ -53,4 +55,6 @@ export function handlePayout(event: PayoutEvent): void {
   referral.passport = transaction.passport
 
   referral.save()
+
+  incrementStatistics(1, event.params.amount)
 }

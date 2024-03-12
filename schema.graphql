@@ -12,6 +12,8 @@ type Account @entity {
   claimedAmount: BigInt!
   unclaimedCount: Int!
   unclaimedAmount: BigInt!
+  totalCount: Int! # unclaimed + claimed
+  totalAmount: BigInt! # unclaimed + claimed
 }
 
 # To easily map data between events
@@ -26,4 +28,11 @@ type Transaction @entity {
 type Escrow @entity {
   id: Bytes! # address
   passport: Bytes! # address
+}
+
+# Should be just one record. To easily globally count any data
+type Statistic @entity {
+  id: String!
+  totalReferralAmount: BigInt!
+  totalReferralCount: Int!
 }
