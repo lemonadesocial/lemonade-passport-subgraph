@@ -23,11 +23,11 @@ export function findOrCreateAccount(passport: Address, address: Address): Accoun
   return account;
 }
 
-export function incrementStatistics(referralCount: i32, referralAmount: BigInt): void {
-  let statistic = Statistic.load("0")
+export function incrementStatistics(passport: Address, referralCount: i32, referralAmount: BigInt): void {
+  let statistic = Statistic.load(passport)
 
   if (!statistic) {
-    statistic = new Statistic("0");
+    statistic = new Statistic(passport);
     statistic.totalReferralCount = 0;
     statistic.totalReferralAmount = BigInt.fromI32(0);
   }
@@ -36,4 +36,17 @@ export function incrementStatistics(referralCount: i32, referralAmount: BigInt):
   statistic.totalReferralAmount = statistic.totalReferralAmount.plus(referralAmount)
 
   statistic.save()
+
+  let globalStatistic = Statistic.load(Address.fromString('0x0000000000000000000000000000000000000000'))
+
+  if (!globalStatistic) {
+    globalStatistic = new Statistic(Address.fromString('0x0000000000000000000000000000000000000000'));
+    globalStatistic.totalReferralCount = 0;
+    globalStatistic.totalReferralAmount = BigInt.fromI32(0);
+  }
+
+  globalStatistic.totalReferralCount += referralCount
+  globalStatistic.totalReferralAmount = globalStatistic.totalReferralAmount.plus(referralAmount)
+
+  globalStatistic.save()
 }

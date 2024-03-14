@@ -30,9 +30,10 @@ type Escrow @entity {
   passport: Bytes! # address
 }
 
-# Should be just one record. To easily globally count any data
+# Convenient counters for each passports
+# Record with address zero for id is counters for entire chain
 type Statistic @entity {
-  id: String!
+  id: Bytes! # passport address / address zero
   totalReferralAmount: BigInt!
   totalReferralCount: Int!
 }

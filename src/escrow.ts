@@ -51,5 +51,5 @@ export function handleDeposited(event: DepositedEvent): void {
 
   account.save()
 
-  incrementStatistics(1, event.params.weiAmount)
+  incrementStatistics(Address.fromBytes(transaction.passport), 1, event.params.weiAmount)
 }
