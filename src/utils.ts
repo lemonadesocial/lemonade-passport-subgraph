@@ -3,6 +3,8 @@ import { Address, BigInt } from "@graphprotocol/graph-ts";
 
 import { Account, Statistic } from "../generated/schema";
 
+const ZERO_ADDRESS = Address.zero()
+
 /** Fetch an account or create one if it doesn't exist */
 export function findOrCreateAccount(passport: Address, address: Address): Account {
   let account = Account.load(passport.toHexString() + '_' + address.toHexString())
@@ -37,10 +39,10 @@ export function incrementStatistics(passport: Address, referralCount: i32, refer
 
   statistic.save()
 
-  let globalStatistic = Statistic.load(Address.fromString('0x0000000000000000000000000000000000000000'))
+  let globalStatistic = Statistic.load(ZERO_ADDRESS)
 
   if (!globalStatistic) {
-    globalStatistic = new Statistic(Address.fromString('0x0000000000000000000000000000000000000000'));
+    globalStatistic = new Statistic(ZERO_ADDRESS);
     globalStatistic.totalReferralCount = 0;
     globalStatistic.totalReferralAmount = BigInt.fromI32(0);
   }
