@@ -3,6 +3,8 @@ import { Address, BigInt } from "@graphprotocol/graph-ts";
 
 import { Account, Statistic } from "../generated/schema";
 
+const ZERO_ADDRESS = Address.zero()
+
 /** Fetch an account or create one if it doesn't exist */
 export function findOrCreateAccount(passport: Address, address: Address): Account {
   let account = Account.load(passport.toHexString() + '_' + address.toHexString())
@@ -23,11 +25,11 @@ export function findOrCreateAccount(passport: Address, address: Address): Accoun
   return account;
 }
 
-export function incrementStatistics(referralCount: i32, referralAmount: BigInt): void {
-  let statistic = Statistic.load("0")
+export function incrementStatistics(passport: Address, referralCount: i32, referralAmount: BigInt): void {
+  let statistic = Statistic.load(passport)
 
   if (!statistic) {
-    statistic = new Statistic("0");
+    statistic = new Statistic(passport);
     statistic.totalReferralCount = 0;
     statistic.totalReferralAmount = BigInt.fromI32(0);
   }
@@ -36,4 +38,17 @@ export function incrementStatistics(referralCount: i32, referralAmount: BigInt):
   statistic.totalReferralAmount = statistic.totalReferralAmount.plus(referralAmount)
 
   statistic.save()
+
+  let globalStatistic = Statistic.load(ZERO_ADDRESS)
+
+  if (!globalStatistic) {
+    globalStatistic = new Statistic(ZERO_ADDRESS);
+    globalStatistic.totalReferralCount = 0;
+    globalStatistic.totalReferralAmount = BigInt.fromI32(0);
+  }
+
+  globalStatistic.totalReferralCount += referralCount
+  globalStatistic.totalReferralAmount = globalStatistic.totalReferralAmount.plus(referralAmount)
+
+  globalStatistic.save()
 }

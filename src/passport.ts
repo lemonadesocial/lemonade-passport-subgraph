@@ -56,5 +56,5 @@ export function handlePayout(event: PayoutEvent): void {
 
   referral.save()
 
-  incrementStatistics(1, event.params.amount)
+  incrementStatistics(Address.fromBytes(transaction.passport), 1, event.params.amount)
 }
