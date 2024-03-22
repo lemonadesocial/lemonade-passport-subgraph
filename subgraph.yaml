@@ -17,6 +17,7 @@ dataSources:
       entities:
         - ExecutePurchase(indexed uint256,indexed address,uint256,address,uint256,bool)
         - ExecuteReserve(indexed uint256,indexed address,uint256,bool,bool)
+        - Reserve(indexed uint256,indexed address,uint256,(address,uint256)[])
         - Payout(indexed address,uint256)
       abis:
         - name: PassportV1Call
@@ -24,8 +25,10 @@ dataSources:
       eventHandlers:
         - event: ExecutePurchase(indexed uint256,indexed address,uint256,address,uint256,bool)
           handler: handlePurchase
-        - event: ExecuteReserve(indexed uint256,indexed address,uint256,bool,bool)
+        - event: Reserve(indexed uint256,indexed address,uint256,(address,uint256)[])
           handler: handleReserve
+        - event: ExecuteReserve(indexed uint256,indexed address,uint256,bool,bool)
+          handler: handleExecuteReserve
         - event: Payout(indexed address,uint256)
           handler: handlePayout
       file: ./src/passport.ts
