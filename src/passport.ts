@@ -3,9 +3,10 @@ import { Address } from "@graphprotocol/graph-ts"
 import {
   ExecutePurchase as ExecutePurchaseEvent,
   ExecuteReserve as ExecuteReserveEvent,
+  Reserve as ReserveEvent,
   Payout as PayoutEvent,
 } from "../generated/PassportV1Call/PassportV1Call"
-import { Referral, Transaction } from "../generated/schema"
+import { Referral, Transaction, Reservation } from "../generated/schema"
 
 import { findOrCreateAccount, incrementStatistics } from "./utils"
 
@@ -21,16 +22,26 @@ export function handlePurchase(event: ExecutePurchaseEvent): void {
   transaction.save()
 }
 
-export function handleReserve(event: ExecuteReserveEvent): void {
+export function handleExecuteReserve(event: ExecuteReserveEvent): void {
   if (!event.params.success) return
 
   const transaction = new Transaction(event.transaction.hash)
+  const reservation = Reservation.load(event.address.toHexString() + "_" + event.params.paymentId.toString())
 
   transaction.sender = event.params.sender
   transaction.referred = event.params.referred
   transaction.passport = event.address
+  transaction.reservationCount = reservation ? reservation.count : 0
 
   transaction.save()
+}
+
+export function handleReserve(event: ReserveEvent): void {
+  const reservation = new Reservation(event.address.toHexString() + "_" + event.params.paymentId.toString())
+
+  reservation.count = event.params.assignments.length
+  
+  reservation.save()
 }
 
 export function handlePayout(event: PayoutEvent): void {
@@ -39,10 +50,11 @@ export function handlePayout(event: PayoutEvent): void {
   if (!transaction || transaction.sender != event.params.recipient) return
 
   const account = findOrCreateAccount(Address.fromBytes(transaction.passport), Address.fromBytes(transaction.sender))
+  const effectiveCount = transaction.reservationCount || 1
 
-  account.claimedCount += 1
+  account.claimedCount += effectiveCount
   account.claimedAmount = account.claimedAmount.plus(event.params.amount)
-  account.totalCount += 1
+  account.totalCount += effectiveCount
   account.totalAmount = account.totalAmount.plus(event.params.amount)
 
   account.save()
@@ -56,5 +68,5 @@ export function handlePayout(event: PayoutEvent): void {
 
   referral.save()
 
-  incrementStatistics(Address.fromBytes(transaction.passport), 1, event.params.amount)
+  incrementStatistics(Address.fromBytes(transaction.passport), effectiveCount, event.params.amount)
 }

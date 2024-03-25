@@ -23,6 +23,12 @@ type Transaction @entity {
   referrer: Bytes # address
   passport: Bytes! # address
   referred: Boolean
+  reservationCount: Int
+}
+
+type Reservation @entity {
+  id: String! # passport address + payment id
+  count: Int!
 }
 
 type Escrow @entity {
