@@ -8,6 +8,11 @@ type Referral @entity {
 
 type Account @entity {
   id: String! # passport contract address + wallet address
+  citizenNumber: Int!
+  network: Bytes!
+  mintedAt: BigInt!
+  updatedAt: BigInt!
+
   claimedCount: Int!
   claimedAmount: BigInt!
   unclaimedCount: Int!

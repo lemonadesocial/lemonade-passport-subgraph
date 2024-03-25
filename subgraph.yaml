@@ -5,6 +5,29 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum
+    name: BaseV1
+    network: optimism
+    source:
+      abi: BaseV1
+      startBlock: 115775322
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ExecutePurchase(indexed bytes32,indexed uint256,indexed address,address,uint256,bool)
+        - ExecuteReserve(indexed bytes32,indexed uint256,indexed address,(address,uint256)[],bool,bool)
+        - ExecuteClaim(indexed bytes32,indexed address,uint256)
+        - ExecuteAssign(indexed bytes32,indexed address,(address,uint256)[])
+        - Mint(indexed bytes32,indexed address,indexed uint256)
+      abis:
+        - name: BaseV1
+          file: ./abis/BaseV1.json
+      eventHandlers:
+        - event: Mint(indexed bytes32,indexed address,indexed uint256)
+          handler: handleMint
+      file: ./src/base.ts
+  - kind: ethereum
     name: PassportV1Call
     network: optimism
     source:
