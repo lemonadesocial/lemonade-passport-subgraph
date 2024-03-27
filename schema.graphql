@@ -6,13 +6,44 @@ type Referral @entity {
   amount: BigInt!
 }
 
-type Account @entity {
-  id: String! # passport contract address + wallet address
-  citizenNumber: Int!
+type ExecutePurchase @entity {
+  id: Bytes! # tx hash
+  sender: Bytes! # address
+  referrer: Bytes! # address
+  tokenId: Int!
+  success: Boolean!
+}
+
+type ExecuteReserve @entity {
+  id: Bytes! # tx hash
   network: Bytes!
+  paymentId: Int!
+  sender: Bytes! # address
+  assignments: Int!
+  referred: Boolean!
+  success: Boolean!
+}
+
+type ExecuteClaim @entity {
+  id: Bytes! # tx hash
+  sender: Bytes! # address
+  tokenId: Int!
+}
+
+type Citizen @entity {
+  id: String! # passport address + wallet address
+
+  citizenNumber: Int!
+  chain: String!
   mintedAt: BigInt!
   updatedAt: BigInt!
 
+  passport: Bytes! # address
+  referralCount: Int!
+}
+
+type Account @entity {
+  id: String! # passport contract address + wallet address
   claimedCount: Int!
   claimedAmount: BigInt!
   unclaimedCount: Int!
