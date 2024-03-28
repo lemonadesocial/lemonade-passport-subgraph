@@ -1,4 +1,4 @@
-import { Address } from '@graphprotocol/graph-ts'
+import { Address, Bytes } from '@graphprotocol/graph-ts'
 
 import {
   ExecutePurchase as ExecutePurchaseEvent,
@@ -10,10 +10,18 @@ import { ExecutePurchase, ExecuteReserve, ExecuteClaim, Citizen } from '../gener
 import { findAndUpsertCitizen } from './utils'
 
 const ZERO_ADDRESS = Address.zero()
+/** Compare with the message id of Optimism that Axelar uses to determine if the network is Optimism,
+ * meaning the action is synchronous
+ * @todo - Capture these synchronous actions on PassportV1 and remove this
+ */
+const isOptimismChain = (network: Bytes): boolean => {
+  return network.toHexString().toLowerCase() == '0x09d0f27659ee556a8134fa56941e42400e672aecc2d4cfc61cdb0fcea4590e05'
+}
 
 export function handleExecutePurchase(event: ExecutePurchaseEvent): void {
   const executePurchase = new ExecutePurchase(event.transaction.hash)
 
+  executePurchase.network = event.params.network.toHexString()
   executePurchase.sender = event.params.sender
   executePurchase.referrer = event.params.referrer
   executePurchase.tokenId = event.params.tokenId.toI32()
@@ -21,7 +29,7 @@ export function handleExecutePurchase(event: ExecutePurchaseEvent): void {
 
   executePurchase.save()
 
-  if (executePurchase.success && event.params.sender.toHexString() !== event.transaction.from.toHexString()) {
+  if (executePurchase.success && isOptimismChain(event.params.network)) {
     findAndUpsertCitizen(
       event,
       Address.fromBytes(executePurchase.sender),
@@ -43,7 +51,7 @@ export function handleExecutePurchase(event: ExecutePurchaseEvent): void {
 export function handleExecuteReserve(event: ExecuteReserveEvent): void {
   const executeReserve = new ExecuteReserve(event.transaction.hash)
 
-  executeReserve.network = event.params.network
+  executeReserve.network = event.params.network.toHexString()
   executeReserve.paymentId = event.params.paymentId.toI32()
   executeReserve.assignments = event.params.assignments.length
   executeReserve.sender = event.params.sender
@@ -52,7 +60,7 @@ export function handleExecuteReserve(event: ExecuteReserveEvent): void {
 
   executeReserve.save()
 
-  if (event.params.referred && executeReserve.success) {
+  if (event.params.referred && executeReserve.success && isOptimismChain(event.params.network)) {
     findAndUpsertCitizen(
       event,
       Address.fromBytes(executeReserve.sender),
@@ -77,6 +85,14 @@ export function handleContractCall(event: ContractCallEvent): void {
       event.params.destinationChain,
       executePurchase.referrer != ZERO_ADDRESS ? 1 : 0
     )
+
+    if (executePurchase.referrer != ZERO_ADDRESS) {
+      const citizen = Citizen.load(event.transaction.to!.toHexString() + '_' + executePurchase.referrer.toHexString())
+      if (!citizen) return
+
+      citizen.referralCount = (citizen.referralCount || 0) + 1
+      citizen.save()
+    }
   }
 
   if (executeClaim) {

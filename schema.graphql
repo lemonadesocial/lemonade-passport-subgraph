@@ -8,6 +8,7 @@ type Referral @entity {
 
 type ExecutePurchase @entity {
   id: Bytes! # tx hash
+  network: String!
   sender: Bytes! # address
   referrer: Bytes! # address
   tokenId: Int!
@@ -16,7 +17,7 @@ type ExecutePurchase @entity {
 
 type ExecuteReserve @entity {
   id: Bytes! # tx hash
-  network: Bytes!
+  network: String!
   paymentId: Int!
   sender: Bytes! # address
   assignments: Int!
