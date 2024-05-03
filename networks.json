@@ -5,6 +5,25 @@
     },
     "EscrowUpgradeable": {
       "startBlock": 115775322
+    },
+    "BaseV1": {
+      "startBlock": 115775322
+    }
+  },
+  "base": {
+    "PassportV1Call": {
+      "startBlock": 11130570
+    },
+    "EscrowUpgradeable": {
+      "startBlock": 11130570
+    }
+  },
+  "mainnet": {
+    "PassportV1Call": {
+      "startBlock": 19400000
+    },
+    "EscrowUpgradeable": {
+      "startBlock": 19400000
     }
   }
 }

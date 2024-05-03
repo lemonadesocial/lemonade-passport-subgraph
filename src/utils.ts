@@ -1,7 +1,7 @@
 
-import { Address, BigInt } from "@graphprotocol/graph-ts";
+import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts";
 
-import { Account, Statistic } from "../generated/schema";
+import { Account, Citizen, Statistic } from "../generated/schema";
 
 const ZERO_ADDRESS = Address.zero()
 
@@ -51,4 +51,30 @@ export function incrementStatistics(passport: Address, referralCount: i32, refer
   globalStatistic.totalReferralAmount = globalStatistic.totalReferralAmount.plus(referralAmount)
 
   globalStatistic.save()
+}
+
+export function findAndUpsertCitizen(
+  event: ethereum.Event,
+  wallet: Address,
+  passport: Address,
+  tokenId: i32 = 0,
+  chain?: string | null,
+  referralsCount: i32 = 0
+): Citizen {
+  let citizen = Citizen.load(passport.toHexString() + '_' + wallet.toHexString())
+
+  if (!citizen) {
+    citizen = new Citizen(passport.toHexString() + '_' + wallet.toHexString());
+    citizen.mintedAt = event.block.timestamp
+  }
+
+  if (tokenId) citizen.citizenNumber = tokenId
+  if (chain) citizen.chain = chain
+  citizen.passport = passport
+  citizen.referralCount = (citizen.referralCount || 0) + referralsCount
+  citizen.updatedAt = event.block.timestamp
+
+  citizen.save()
+
+  return citizen
 }

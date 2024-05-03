@@ -5,6 +5,34 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum
+    name: BaseV1
+    network: optimism
+    source:
+      abi: BaseV1
+      startBlock: 115775322
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ExecutePurchase(indexed bytes32,indexed uint256,indexed address,address,uint256,bool)
+        - ExecuteReserve(indexed bytes32,indexed uint256,indexed address,(address,uint256)[],bool,bool)
+        - ExecuteClaim(indexed bytes32,indexed address,uint256)
+        - ContractCall(indexed address,string,string,indexed bytes32,bytes)
+      abis:
+        - name: BaseV1
+          file: ./abis/BaseV1.json
+      eventHandlers:
+        - event: ContractCall(indexed address,string,string,indexed bytes32,bytes)
+          handler: handleContractCall
+        - event: ExecutePurchase(indexed bytes32,indexed uint256,indexed address,address,uint256,bool)
+          handler: handleExecutePurchase
+        - event: ExecuteReserve(indexed bytes32,indexed uint256,indexed address,(address,uint256)[],bool,bool)
+          handler: handleExecuteReserve
+        - event: ExecuteClaim(indexed bytes32,indexed address,uint256)
+          handler: handleExecuteClaim
+      file: ./src/base.ts
+  - kind: ethereum
     name: PassportV1Call
     network: optimism
     source:
